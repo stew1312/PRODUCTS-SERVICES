@@ -15,6 +15,7 @@ builder.Services
     .AddJwtBearer(options =>
     {
         options.Authority = builder.Configuration["Auth:Authority"];
+
         options.Audience = builder.Configuration["Auth:Audience"];
     });
 builder.Services.AddAuthorization();
@@ -29,8 +30,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthentication();
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();
