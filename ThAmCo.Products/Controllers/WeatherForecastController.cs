@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +5,7 @@ namespace ThAmCo.Products.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-
+[Authorize] // ✅ Authentication required for all methods
 public class WeatherForecastController : ControllerBase
 {
     private static readonly string[] Summaries = new[]
