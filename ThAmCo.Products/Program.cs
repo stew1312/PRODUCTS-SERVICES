@@ -3,12 +3,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Threading.Tasks;
+using ThAmCo.Products.Data.Products;
+using ThAmCo.Products.Services.UnderCutters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,6 +65,37 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<IUnderCuttersService, UnderCuttersServiceFake>();
+}
+builder.Services.AddDbContext<ProductsContext>(options =>
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        var folder = Environment.SpecialFolder.LocalApplicationData;
+        var path = Environment.GetFolderPath(folder);
+        var dbPath = System.IO.Path.Join(path, "products.db");
+        options.UseSqlite($"Data Source={dbPath}");
+
+        options.EnableDetailedErrors();
+        options.EnableSensitiveDataLogging();
+    }
+    else
+    {
+        var cs = builder.Configuration.GetConnectionString("ProductsContext");
+        options.UseSqlServer(cs, sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(2),
+                errorNumbersToAdd: null
+            );
+        });
+
+    }
+});
+
 
 var app = builder.Build();
 
