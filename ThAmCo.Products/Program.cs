@@ -96,15 +96,32 @@ builder.Services.AddDbContext<ProductsContext>(options =>
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IUnderCuttersService, UnderCuttersServiceFake>();
-    builder.Services.AddSingleton<IProductsRepo, ProductsRepoFake>();
 }
-else
-{
-    builder.Services.AddTransient<IProductsRepo, ProductsRepo>();
-}
+
+
+builder.Services.AddTransient<IProductsRepo, ProductsRepo>();
+
 
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var env = services.GetRequiredService<IWebHostEnvironment>();
+    if (env.IsDevelopment())
+    {
+        var context = services.GetRequiredService<ProductsContext>();
+        try
+        {
+            ProductsInitialiser.SeedTestData(context).Wait();
+        }
+        catch (Exception e)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogDebug("Seeding test data failed.");
+        }
+    }
+}
 
 // ✅ Correct Middleware Order
 if (app.Environment.IsDevelopment())
