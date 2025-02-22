@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Threading.Tasks;
 using ThAmCo.Products.Data.Products;
+using ThAmCo.Products.Services.ProductsRepo;
 using ThAmCo.Products.Services.UnderCutters;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,10 +66,7 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddSingleton<IUnderCuttersService, UnderCuttersServiceFake>();
-}
+
 builder.Services.AddDbContext<ProductsContext>(options =>
 {
     if (builder.Environment.IsDevelopment())
@@ -95,6 +93,15 @@ builder.Services.AddDbContext<ProductsContext>(options =>
 
     }
 });
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<IUnderCuttersService, UnderCuttersServiceFake>();
+    builder.Services.AddSingleton<IProductsRepo, ProductsRepoFake>();
+}
+else
+{
+    builder.Services.AddTransient<IProductsRepo, ProductsRepo>();
+}
 
 
 var app = builder.Build();
