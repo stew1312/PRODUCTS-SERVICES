@@ -11,9 +11,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Threading.Tasks;
+using System.Net.Http;
 using ThAmCo.Products.Data.Products;
 using ThAmCo.Products.Services.ProductsRepo;
 using ThAmCo.Products.Services.UnderCutters;
+using Polly;
+using Polly.Extensions.Http;
+using ThAnCo.Products.Services.UnderCutters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +28,7 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // ✅ Register Required Services
-builder.Services.AddControllers(); // 🔥 Ensures controllers are mapped
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -67,6 +71,7 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
+// ✅ Configure Database Context
 builder.Services.AddDbContext<ProductsContext>(options =>
 {
     if (builder.Environment.IsDevelopment())
@@ -90,20 +95,30 @@ builder.Services.AddDbContext<ProductsContext>(options =>
                 errorNumbersToAdd: null
             );
         });
-
     }
 });
+
+// ✅ Configure Polly Retry Policy
+var retryPolicy = HttpPolicyExtensions
+    .HandleTransientHttpError()
+    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddSingleton<IUnderCuttersService, UnderCuttersServiceFake>();
 }
+else
+{
+    builder.Services.AddHttpClient<IUnderCuttersService, UnderCuttersService>()
+        .AddPolicyHandler(retryPolicy);
+}
 
-
+// ✅ Register Product Repository
 builder.Services.AddTransient<IProductsRepo, ProductsRepo>();
 
-
-
 var app = builder.Build();
+
+// ✅ Seed Database in Development Mode
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -118,12 +133,12 @@ using (var scope = app.Services.CreateScope())
         catch (Exception e)
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogDebug("Seeding test data failed.");
+            logger.LogDebug($"Seeding test data failed: {e.Message}");
         }
     }
 }
 
-// ✅ Correct Middleware Order
+// ✅ Configure Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -131,9 +146,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAuthentication(); // ✅ MUST be before UseAuthorization()
+app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapControllers(); // 🔥 Ensures all API routes are mapped
+app.MapControllers();
 
 app.Run();
