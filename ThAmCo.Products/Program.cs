@@ -17,7 +17,7 @@ using ThAmCo.Products.Services.ProductsRepo;
 using ThAmCo.Products.Services.UnderCutters;
 using Polly;
 using Polly.Extensions.Http;
-using ThAnCo.Products.Services.UnderCutters;
+using ThAmCo.Products.Services.UnderCutters;
 
 var builder = WebApplication.CreateBuilder(args);
 

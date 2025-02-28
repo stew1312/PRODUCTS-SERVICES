@@ -1,29 +1,37 @@
 using System;
-using System.Net;
-using ThAmCo.Products.Services.UnderCutters;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
-namespace ThAnCo.Products.Services.UnderCutters;
-
-public class UnderCuttersService : IUnderCuttersService
+namespace ThAmCo.Products.Services.UnderCutters
 {
-    private readonly HttpClient _client;
-
-    public UnderCuttersService(HttpClient client, IConfiguration configuration)
+    public class UnderCuttersService : IUnderCuttersService
     {
-        var baseUrl = configuration["WebServices:UnderCutters:BaseURL"] ?? "";
-        client.BaseAddress = new System.Uri(baseUrl);
-        client.Timeout = TimeSpan.FromSeconds(5);
-        client.DefaultRequestHeaders.Add("Accept", "application/json");
-        _client = client;
-    }
+        private readonly HttpClient _httpClient;
 
-    public async Task<IEnumerable<ProductDto>> GetProductsAsync()
-    {
-        var uri = "api/product";
-        var response = await _client.GetAsync(uri);
-        response.EnsureSuccessStatusCode();
-        var reviews = await response.Content.ReadFromJsonAsync<IEnumerable<ProductDto>>();
+        public UnderCuttersService(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
 
-        return reviews;
+        public async Task<IEnumerable<ProductDto>> GetProductsAsync()
+        {
+            return await _httpClient.GetFromJsonAsync<IEnumerable<ProductDto>>("https://api.undercutters.com/products")
+                   ?? Array.Empty<ProductDto>();
+        }
+
+        // ✅ Implement missing SearchProductsAsync method
+        public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchText)
+        {
+            var allProducts = await GetProductsAsync();
+
+            var matchingProducts = allProducts.Where(p =>
+                p.Name.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)
+            ).ToList();
+
+            return matchingProducts;
+        }
     }
 }

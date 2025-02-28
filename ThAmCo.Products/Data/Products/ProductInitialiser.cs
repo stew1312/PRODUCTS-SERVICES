@@ -16,9 +16,9 @@ public static class ProductsInitialiser
 
         var products = new List<Product>
         {
-            new() { Id = 1, Name = "Test product G" },
-            new() { Id = 2, Name = "Test product H" },
-            new() { Id = 3, Name = "Test product I" },
+            new() { Id = 1, Name = "Shirt" },
+            new() { Id = 2, Name = "Tie" },
+            new() { Id = 3, Name = "Belt" },
         };
 
         products.ForEach(p => context.Add(p));
