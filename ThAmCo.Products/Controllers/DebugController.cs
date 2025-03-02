@@ -21,7 +21,7 @@ public class DebugController : ControllerBase
         _productRepository = productsRepo;
     }
 
-    // ✅ GET: /debug/undercutters - Fetch All UnderCutters Products
+    // get the  /debug/undercutters - Fetch All UnderCutters Products
     [HttpGet("undercutters")]
     public async Task<IActionResult> UnderCutters()
     {
@@ -38,13 +38,16 @@ public class DebugController : ControllerBase
         return Ok(products.ToList());
     }
 
-    // ✅ GET: /debug/undercutters/search?name=ProductA&id=1 - Search UnderCutters by Name or ID
+// get the  /debug/undercutters/search?name=ProductA&id=1&description=Red - Search UnderCutters by Name, ID, or Description
     [HttpGet("undercutters/search")]
-    public async Task<IActionResult> SearchUnderCutters([FromQuery] string? name = null, [FromQuery] int? id = null)
+    public async Task<IActionResult> SearchUnderCutters(
+        [FromQuery] string? name = null, 
+        [FromQuery] int? id = null, 
+        [FromQuery] string? description = null)
     {
-        if (string.IsNullOrEmpty(name) && id == null)
+        if (string.IsNullOrEmpty(name) && id == null && string.IsNullOrEmpty(description))
         {
-            return BadRequest("❌ Please provide either an ID or Name for search.");
+            return BadRequest("❌ Please provide either an ID, Name, or Description for search.");
         }
 
         IEnumerable<ProductDto> products;
@@ -52,7 +55,7 @@ public class DebugController : ControllerBase
         {
             products = await _underCuttersService.GetProductsAsync();
 
-            // ✅ Apply search filter if name or ID is provided
+            // ✅ Apply search filter if name, ID, or description is provided
             if (!string.IsNullOrEmpty(name))
             {
                 products = products.Where(p => p.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase));
@@ -60,6 +63,10 @@ public class DebugController : ControllerBase
             if (id.HasValue)
             {
                 products = products.Where(p => p.Id == id);
+            }
+            if (!string.IsNullOrEmpty(description))
+            {
+                products = products.Where(p => p.Description.Contains(description, StringComparison.InvariantCultureIgnoreCase));
             }
         }
         catch (Exception ex)
@@ -75,8 +82,32 @@ public class DebugController : ControllerBase
 
         return Ok(products);
     }
+    
+    // get the  /debug/undercutters/products - Fetch All Products from UnderCutters
+    [HttpGet("undercutters/products")]
+    public async Task<IActionResult> GetUnderCuttersProducts()
+    {
+        IEnumerable<ProductDto> products;
+        try
+        {
+            products = await _underCuttersService.GetProductsAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"❌ Exception occurred in UnderCutters service: {ex.Message}");
+            products = Array.Empty<ProductDto>();
+        }
 
-    // ✅ GET: /debug/repo - Fetch All Products from ProductsRepo
+        if (!products.Any())
+        {
+            return NotFound("❌ No UnderCutters products found.");
+        }
+
+        return Ok(products);
+    }
+
+
+    // get the /debug/repo - Fetch All Products from ProductsRepo
     [HttpGet("repo")]
     public async Task<IActionResult> Repo([FromQuery] string? name = null, [FromQuery] int? id = null)
     {

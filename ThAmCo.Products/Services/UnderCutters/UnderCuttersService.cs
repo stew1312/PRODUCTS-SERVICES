@@ -22,13 +22,14 @@ namespace ThAmCo.Products.Services.UnderCutters
                    ?? Array.Empty<ProductDto>();
         }
 
-        // ✅ Implement missing SearchProductsAsync method
+        //  Search by  API fetch the  id, name, Description
         public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchText)
         {
             var allProducts = await GetProductsAsync();
 
             var matchingProducts = allProducts.Where(p =>
-                p.Name.Contains(searchText, StringComparison.InvariantCultureIgnoreCase)
+                p.Name.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) ||
+                p.Description.Contains(searchText, StringComparison.InvariantCultureIgnoreCase) 
             ).ToList();
 
             return matchingProducts;

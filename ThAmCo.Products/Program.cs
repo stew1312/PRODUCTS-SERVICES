@@ -21,18 +21,18 @@ using ThAmCo.Products.Services.UnderCutters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Load Configuration
+// Loads the  Configuration
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-// ✅ Register Required Services
+// Register the  Required Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ Configure Authentication with Debug Logging
+// Configure the  Authentication with Debug Logging
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -57,13 +57,13 @@ builder.Services
             },
             OnTokenValidated = context =>
             {
-                Console.WriteLine("✅ Token successfully validated.");
+                Console.WriteLine("Token successfully validated.");
                 return Task.CompletedTask;
             }
         };
     });
 
-// ✅ Enforce Authorization Globally
+// Do global authorisation 
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -71,7 +71,7 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
-// ✅ Configure Database Context
+// Configure Database Context
 builder.Services.AddDbContext<ProductsContext>(options =>
 {
     if (builder.Environment.IsDevelopment())
@@ -98,7 +98,7 @@ builder.Services.AddDbContext<ProductsContext>(options =>
     }
 });
 
-// ✅ Configure Polly Retry Policy
+// Configure the Polly Retry Policy
 var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
@@ -113,12 +113,12 @@ else
         .AddPolicyHandler(retryPolicy);
 }
 
-// ✅ Register Product Repository
+// Register the Product Repository
 builder.Services.AddTransient<IProductsRepo, ProductsRepo>();
 
 var app = builder.Build();
 
-// ✅ Seed Database in Development Mode
+// Seed Database in the Development Mode
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -138,7 +138,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ✅ Configure Middleware
+// Configure the Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

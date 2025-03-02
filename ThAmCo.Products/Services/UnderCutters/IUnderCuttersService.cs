@@ -7,7 +7,7 @@ namespace ThAmCo.Products.Services.UnderCutters
     {
         Task<IEnumerable<ProductDto>> GetProductsAsync();
         
-        // ✅ Ensure this method exists in the interface
+        
         Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchText);
     }
 }
