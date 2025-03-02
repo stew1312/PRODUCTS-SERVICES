@@ -20,6 +20,10 @@ namespace ThAmCo.Products.Services.ProductsRepo
                 Id = p.Id,
                 Name = p.Name
             }).ToListAsync();
+
+            // ✅ Logging the count of retrieved products
+            Console.WriteLine($"📌 Fetching products from DB. Count: {products.Count()}");
+
             return products;
         }
     }

@@ -123,17 +123,27 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var env = services.GetRequiredService<IWebHostEnvironment>();
+    
     if (env.IsDevelopment())
     {
         var context = services.GetRequiredService<ProductsContext>();
+
         try
         {
+            // Count the number of products before seeding
+            int productCount = context.Products.Count();
+            Console.WriteLine($"📌 Current Product Count in DB: {productCount}");
+
             ProductsInitialiser.SeedTestData(context).Wait();
+
+            // Count the number of products after seeding
+            int newProductCount = context.Products.Count();
+            Console.WriteLine($"✅ Updated Product Count in DB: {newProductCount}");
         }
         catch (Exception e)
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogDebug($"Seeding test data failed: {e.Message}");
+            logger.LogError($"❌ Seeding test data failed: {e.Message}");
         }
     }
 }

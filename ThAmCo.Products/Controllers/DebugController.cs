@@ -55,7 +55,7 @@ public class DebugController : ControllerBase
         {
             products = await _underCuttersService.GetProductsAsync();
 
-            // ✅ Apply search filter if name, ID, or description is provided
+            // Apply search filter if name, ID, or description is provided
             if (!string.IsNullOrEmpty(name))
             {
                 products = products.Where(p => p.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase));
@@ -116,7 +116,7 @@ public class DebugController : ControllerBase
         {
             products = await _productRepository.GetProductsAsync();
 
-            // ✅ Apply search filter if name or ID is provided
+            // Apply search filter if name or ID is provided
             if (!string.IsNullOrEmpty(name))
             {
                 products = products.Where(p => p.Name.Contains(name, StringComparison.InvariantCultureIgnoreCase));
